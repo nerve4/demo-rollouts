@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: demo-analysis
+spec:
+  replicas: 3
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: demo-analysis
+  strategy:
+    canary:
+      steps:
+      - setWeight: 10
+      - pause:
+          duration: 20      
+  template:
+    metadata:
+      labels:
+        app: demo-analysis
+    spec:
+      containers:
+      - image: argoproj/rollouts-demo:blue
+        imagePullPolicy: Always
+        name: demo-analysis
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-analysis
+  labels:
+    app: demo-analysis
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  selector:
+    app: demo-analysis
+  type: NodePort
+
