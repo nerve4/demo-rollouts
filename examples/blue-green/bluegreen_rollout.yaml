@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: demo-bluegreen
+  labels:
+    app: demo-bluegreen
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo-bluegreen
+  template:
+    metadata:
+      labels:
+        app: demo-bluegreen
+    spec:
+      containers:
+      - name: demo-bluegreen
+        image: argoproj/rollouts-demo:blue
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+  strategy:
+    blueGreen:
+      autoPromotionEnabled: true
+      activeService: demo-bluegreen
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-bluegreen
+  labels:
+    app: demo-bluegreen
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  selector:
+    app: demo-bluegreen
+  type: NodePort
